@@ -2,6 +2,7 @@ fs = require 'fs'
 mkdirp = require 'mkdirp'
 async = require 'async'
 stylus = require 'stylus'
+path = require 'path'
 {compile} = require './compiler'
 
 class OnTheFlyCompiler
@@ -104,11 +105,21 @@ class OnTheFlyCompiler
         return fn()
 
   mapImports: (file, fn) ->
+    # Capture file extension
+    ext = path.extname(file.origFile)
+
     # Need to map imports for stylus files
-    if file.origFile.indexOf('.styl') > -1
+    if ext == '.styl' || ext == '.scss'
       fs.readFile file.origFile, 'utf8', (err, content) =>
         return fn(err) if err?
-        style = @compilers.stylus(content, file.origFile)
+        #style = @compilers.stylus(content, file.origFile)
+        compiler = @compilers[{
+          '.styl': 'stylus',
+          '.scss': 'sass'
+          }[ext]]
+
+        style = compiler content, file.origFile
+
         file._imports = []
         paths = style.options._imports = []
         style.render (err, css) ->

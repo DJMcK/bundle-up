@@ -17,6 +17,12 @@ exports.compile = compile = (compilers, content, file, cb) ->
           console.log err.message
           css = err.message
         return cb(err, css)
+    when 'scss'
+      compilers.sass(content,file).render (err, result) ->
+        if err?
+          console.log err.message
+          result = err.message
+        return cb(err, result)
     when 'css'
       return cb(null, compilers.css(content))
     when 'js'
